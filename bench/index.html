@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLITZ benchmarks</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --line: #ddd; --accent: #d97706; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --fg: #eaeaea; --muted: #999; --line: #2e2e2e; --accent: #fbbf24; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 820px; margin-inline: auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p { color: var(--muted); margin: 4px 0 12px; }
+  button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--accent);
+           background: var(--accent); color: #000; cursor: pointer; margin-right: 8px; }
+  button:disabled { opacity: .5; cursor: default; }
+  button.secondary { background: transparent; color: var(--fg); border-color: var(--line); }
+  #status { margin: 12px 0; color: var(--muted); min-height: 1.5em; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 16px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>BLITZ benchmarks</h1>
+  <p>Stage 1: BLITZ internals vs crypto.subtle. Median of 11 runs, 2 warm-up runs discarded.</p>
+  <button id="run">Run benchmarks</button>
+  <button id="copy" class="secondary" disabled>Copy results JSON</button>
+  <div id="status">Ready.</div>
+  <div class="wrap">
+    <table>
+      <thead><tr><th>Scenario</th><th class="num">Median ms</th><th class="num">Ops/s</th><th class="num">MB/s</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <footer id="env"></footer>
+
+<script type="module">
+  import { runAll } from "./bench.js";
+
+  const run = document.getElementById("run");
+  const copy = document.getElementById("copy");
+  const status = document.getElementById("status");
+  const rows = document.getElementById("rows");
+  const env = document.getElementById("env");
+  let last = null;
+
+  const fmt = (n, digits = 1) =>
+    n == null ? "-" : n.toLocaleString("en-US", { maximumFractionDigits: digits });
+
+  function addRow(r) {
+    const tr = document.createElement("tr");
+    const cells = [r.name, fmt(r.medianMs, 2), fmt(r.opsPerSec, 0), fmt(r.mbPerSec, 1)];
+    cells.forEach((text, i) => {
+      const td = document.createElement("td");
+      if (i > 0) td.className = "num";
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    rows.appendChild(tr);
+  }
+
+  run.addEventListener("click", async () => {
+    run.disabled = true;
+    copy.disabled = true;
+    rows.textContent = "";
+    try {
+      last = await runAll({
+        onProgress: (i, total, name) => { status.textContent = `Running ${i + 1}/${total}: ${name}`; },
+        onResult: addRow,
+      });
+      status.textContent = "Done.";
+      env.textContent = `${last.environment.userAgent} | cores: ${last.environment.hardwareConcurrency}`;
+      copy.disabled = false;
+    } catch (e) {
+      status.textContent = "Error: " + (e && e.message ? e.message : e);
+    }
+    run.disabled = false;
+  });
+
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(last, null, 2));
+      status.textContent = "Copied to clipboard.";
+    } catch {
+      status.textContent = "Copy failed. Select the table manually instead.";
+    }
+  });
+</script>
+</body>
+</html>
