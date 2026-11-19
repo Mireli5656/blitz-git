@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLITZ: a browser-native Git built for speed</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --line: #ddd; --accent: #d97706; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --fg: #eaeaea; --muted: #999; --line: #2e2e2e; --accent: #fbbf24; }
+  }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg);
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 640px; margin-inline: auto; }
+  h1 { font-size: 2rem; margin: 0; letter-spacing: .04em; }
+  .tag { color: var(--muted); margin: 4px 0 20px; }
+  .card { display: block; padding: 14px 16px; margin: 10px 0; border: 1px solid var(--line);
+          border-radius: 10px; color: inherit; text-decoration: none; }
+  .card:hover { border-color: var(--accent); }
+  .card strong { display: block; color: var(--accent); }
+  .card span { color: var(--muted); font-size: 14px; }
+  footer { margin-top: 24px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>BLITZ</h1>
+  <p class="tag">A browser-native Git implementation built for speed. Vanilla JS, zero dependencies, real Git object format.</p>
+
+  <a class="card" href="bench/">
+    <strong>Benchmarks</strong>
+    <span>Run the benchmark suite on your own device.</span>
+  </a>
+  <a class="card" href="test/">
+    <strong>Tests</strong>
+    <span>Hash vectors, Git object format and object store checks.</span>
+  </a>
+
+  <footer>Status: early development (Stage 1 of 9). No speed claims until the benchmarks back them up.</footer>
+</body>
+</html>
