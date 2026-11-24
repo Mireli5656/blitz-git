@@ -35,22 +35,23 @@
     const li = document.createElement("li");
     const mark = document.createElement("span");
     mark.className = r.ok ? "ok" : "bad";
-    mark.textContent = r.ok ? "PASS " : "FAIL ";
+    mark.textContent = r.skipped ? "SKIP " : r.ok ? "PASS " : "FAIL ";
     li.appendChild(mark);
     li.appendChild(document.createTextNode(r.name));
-    if (!r.ok) {
+    if (!r.ok || r.skipped) {
       const err = document.createElement("span");
       err.className = "err";
-      err.textContent = r.error;
+      err.textContent = r.skipped ? r.note : r.error;
       li.appendChild(err);
     }
     list.appendChild(li);
   });
 
   const failed = results.filter((r) => !r.ok).length;
+  const skipped = results.filter((r) => r.skipped).length;
   summary.textContent = failed
     ? `${failed} of ${results.length} tests failed`
-    : `All ${results.length} tests passed`;
+    : `All ${results.length - skipped} tests passed` + (skipped ? ` (${skipped} skipped)` : "");
   summary.className = failed ? "bad" : "ok";
 </script>
 </body>
