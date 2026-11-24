@@ -20,7 +20,7 @@
   button.secondary { background: transparent; color: var(--fg); border-color: var(--line); }
   #status { margin: 12px 0; color: var(--muted); min-height: 1.5em; }
   .wrap { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
   th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); font-size: 14px; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   footer { margin-top: 16px; color: var(--muted); font-size: 13px; }
@@ -28,13 +28,13 @@
 </head>
 <body>
   <h1>BLITZ benchmarks</h1>
-  <p>Stage 1: BLITZ internals vs crypto.subtle. Median of 11 runs, 2 warm-up runs discarded.</p>
+  <p>Median of N runs (see Runs column), 2 warm-up runs discarded. Takes a minute or two on a phone: keep this tab open.</p>
   <button id="run">Run benchmarks</button>
   <button id="copy" class="secondary" disabled>Copy results JSON</button>
   <div id="status">Ready.</div>
   <div class="wrap">
     <table>
-      <thead><tr><th>Scenario</th><th class="num">Median ms</th><th class="num">Ops/s</th><th class="num">MB/s</th></tr></thead>
+      <thead><tr><th>Scenario</th><th class="num">Runs</th><th class="num">Median ms</th><th class="num">Ops/s</th><th class="num">MB/s</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
@@ -55,7 +55,7 @@
 
   function addRow(r) {
     const tr = document.createElement("tr");
-    const cells = [r.name, fmt(r.medianMs, 2), fmt(r.opsPerSec, 0), fmt(r.mbPerSec, 1)];
+    const cells = [r.name, String(r.runs), fmt(r.medianMs, 2), fmt(r.opsPerSec, 0), fmt(r.mbPerSec, 1)];
     cells.forEach((text, i) => {
       const td = document.createElement("td");
       if (i > 0) td.className = "num";
