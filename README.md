@@ -39,27 +39,44 @@ Native Git written in C will always have the edge on raw CPU work. BLITZ aims to
 
 ```js
 import { Repo } from "./src/repo.js";
+import { OpfsBackend } from "./src/store.js";
+import { FsHandleWorkTree } from "./src/worktree.js";
 
-const repo = await Repo.init("my-project");
+// Files you edit live in the origin private file system; objects and the
+// index live in a hidden ".blitz" folder next to them (ignored by status).
+const root = await navigator.storage.getDirectory();
+const repo = await Repo.open({
+  backend: new OpfsBackend(".blitz"),
+  worktree: new FsHandleWorkTree(root),
+});
 
 await repo.add("index.html");
-const id = await repo.commit("First commit");
+console.log(await repo.status()); // { modified, deleted, untracked, counters }
 
-console.log(await repo.status());
-console.log(await repo.log());
+// Coming in Stage 3:
+// const id = await repo.commit("First commit");
+// console.log(await repo.log());
 ```
 
 ## Roadmap
 
-- [ ] **Stage 1:** Object store (blob, tree, commit), SHA-1, loose objects, benchmark harness
-- [ ] **Stage 2:** Index file and cached `status`
-- [ ] **Stage 3:** `add`, `commit`, `log`
+- [x] **Stage 1:** Object store (blob, tree, commit), SHA-1, loose objects, benchmark harness
+- [x] **Stage 2:** Index file (real Git format) and cached `status`
+- [ ] **Stage 3:** `commit`, `log`, `add` for directories
 - [ ] **Stage 4:** `branch`, `checkout`
 - [ ] **Stage 5:** Worker pool and OPFS tuning
 - [ ] **Stage 6:** Packfiles and delta compression
 - [ ] **Stage 7:** `diff`
 - [ ] **Stage 8:** `clone` and `fetch` over smart HTTP
 - [ ] **Stage 9:** Public benchmark page and first release
+
+## Known limitations
+
+- `status` compares the index with the work tree only. Comparing with the last commit arrives in Stage 3.
+- No `.gitignore` support yet. The `.git` and `.blitz` folders are always skipped.
+- `add` takes file paths only (no directories or globs yet).
+- Browsers do not expose the executable bit, so file modes are always `100644`.
+- The index is read and written in Git index version 2 only.
 
 ## Benchmarks
 
@@ -78,14 +95,17 @@ Planned scenarios, each compared with isomorphic-git:
 
 ```
 blitz-git/
-├── index.html        # demo and benchmark UI
+├── index.html        # landing page
 ├── src/
 │   ├── sha1.js       # hashing
 │   ├── objects.js    # blob, tree, commit
-│   ├── index-cache.js
-│   ├── repo.js       # public API
-│   └── worker.js     # worker pool
-├── bench/            # benchmark code and results
+│   ├── store.js      # loose object store (memory and OPFS backends)
+│   ├── index-cache.js# Git index v2 + stat cache
+│   ├── worktree.js   # work tree backends (memory, directory handles)
+│   ├── status.js     # fast status
+│   └── repo.js       # public API
+├── test/             # test runner page + tests
+├── bench/            # benchmark page + code
 └── README.md
 ```
 
