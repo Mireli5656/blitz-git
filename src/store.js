@@ -48,14 +48,17 @@ export class MemoryBackend {
 // Origin Private File System. Simple async version for Stage 1; Stage 5 moves
 // this into Web Workers with synchronous access handles.
 export class OpfsBackend {
-  constructor(name = "blitz") {
+  // parent: optional FileSystemDirectoryHandle to create the folder in.
+  // Defaults to the origin private file system root.
+  constructor(name = "blitz", parent = null) {
     this.name = name;
+    this._parent = parent;
     this._rootHandle = null;
   }
 
   async _root() {
     if (!this._rootHandle) {
-      const top = await navigator.storage.getDirectory();
+      const top = this._parent ?? (await navigator.storage.getDirectory());
       this._rootHandle = await top.getDirectoryHandle(this.name, { create: true });
     }
     return this._rootHandle;
